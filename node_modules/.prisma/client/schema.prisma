@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String      @id @default(uuid())
+  username   String      @unique
+  password   String
+  deleted    Boolean     @default(false)
+  isPremium  Boolean     @default(false)
+  isOnline   Boolean     @default(true)
+  subreddits Subreddit[]
+  upvotes    Upvote[]
+  downvotes  Downvote[]
+  posts      Post[]
+}
+
+model Category {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  topics Topic[]
+}
+
+model Topic {
+  id         String      @id @default(uuid())
+  name       String      @unique
+  categoryId String
+  category   Category    @relation(fields: [categoryId], references: [id])
+  subreddits Subreddit[]
+}
+
+model Subreddit {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  name        String   @unique
+  userId      String
+  description String?
+  deleted     Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id])
+  posts       Post[]
+  Topic       Topic?   @relation(fields: [topicId], references: [id])
+  topicId     String?
+}
+
+model Post {
+  id             String     @id @default(uuid())
+  createdAt      DateTime   @default(now())
+  title          String?
+  text           String
+  commentCount   Int        @default(0)
+  deletedContent String?
+  deleted        Boolean    @default(false)
+  userId         String
+  subredditId    String
+  parentId       String?
+  user           User       @relation(fields: [userId], references: [id])
+  subreddit      Subreddit  @relation(fields: [subredditId], references: [id])
+  upVotes        Upvote[]
+  downVotes      Downvote[]
+  children       Post[]     @relation("ParentChild")
+  parent         Post?      @relation("ParentChild", fields: [parentId], references: [id])
+}
+
+model Upvote {
+  id     String @id @default(uuid())
+  userId String
+  postId String
+  user   User   @relation(fields: [userId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Downvote {
+  id     String @id @default(uuid())
+  userId String
+  postId String
+  user   User   @relation(fields: [userId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
