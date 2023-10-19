@@ -24,12 +24,19 @@ export const prisma = new PrismaClient();
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: "https://joyful-pothos-3f79a4.netlify.app/",
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Check if the origin ends with the specified domain
+    if (origin && origin.endsWith(".joyful-pothos-3f79a4.netlify.app")) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
