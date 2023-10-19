@@ -25,23 +25,28 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Check if the origin ends with the specified domain
-    if (origin && origin.endsWith(".joyful-pothos-3f79a4.netlify.app")) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: "https://joyful-pothos-3f79a4.netlify.app",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-console.log(`DATABASE_URL: ${process.env.DATABASE_URL}`);
-console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
-console.log(`JWT_SECRET: ${process.env.JWT_SECRET}`);
-console.log(`PORT: ${process.env.PORT}`);
-
 app.use(cors(corsOptions));
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://joyful-pothos-3f79a4.netlify.app"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH");
+    return res.status(200).json({});
+  }
+  next();
+});
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
